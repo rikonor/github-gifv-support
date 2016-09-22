@@ -1,16 +1,12 @@
 var gifvRegex = /^http.*gifv$/i;
 
 function buildGifvVideoEmbed(gifvLink) {
-  var defaultVideo = "https://i.imgur.com/kMEYLEY.gifv";
-
   // validate the given link
   if (!gifvLink.match(gifvRegex)) {
-    console.log("Not a valid gifv link, falling back to default video..");
-    gifvLink = defaultVideo;
+    return null;
   }
 
   gifvLink = gifvLink.replace("gifv", "mp4");
-  console.log("Using " + gifvLink);
 
   var sourceElem = document.createElement("source");
   sourceElem.setAttribute("src", gifvLink);
@@ -27,42 +23,51 @@ function buildGifvVideoEmbed(gifvLink) {
 
   videoElem.style["max-width"] = "1440px";
   videoElem.style["max-height"] = "320px";
+  videoElem.style["display"] = "block";
+  videoElem.style["margin-bottom"] = "5px";
 
   return videoElem;
 }
 
 function replaceGifvLinks(comments) {
-  console.log("Searching for comments in current page..")
   var comments = document.getElementsByClassName("comment-body");
 
   if (comments.length === 0) {
-    console.log("No comments found..");
+    // no comments on page
     return;
   }
 
-  var comment = comments[0];
+  for (var i = 0; i < comments.length; i++) {
+    var comment = comments[i];
 
-  // Search for <a> tags
-  var anchors = comment.getElementsByTagName("a");
-  if (anchors.length === 0) {
-    console.log("No links in comment..");
-    return;
+    // Search for <a> tags
+    var anchors = comment.getElementsByTagName("a");
+    if (anchors.length === 0) {
+      // no links in comment
+      return;
+    }
+
+    for (var j = 0; j < anchors.length; j++) {
+      var anchor = anchors[j];
+
+      if (!anchor.href.match(gifvRegex)) {
+        // not a gifv link
+        return
+      }
+
+      // Replace the anchor text with the gifv
+      var newVideo = buildGifvVideoEmbed(anchor.href);
+      if (newVideo === null) {
+        // failed to get a valid video
+        return
+      }
+      anchor.textContent = '';
+      anchor.appendChild(newVideo);
+
+      // Start all videos
+      newVideo.play();
+    }
   }
-
-  var anchor = anchors[0];
-
-  if (!anchor.href.match(gifvRegex)) {
-    console.log("Not a gifv link..");
-    return
-  }
-
-  // Add an element after the link
-  var newVideo = buildGifvVideoEmbed(anchor.href);
-  comment.appendChild(newVideo);
-
-  // Start all videos
-  newVideo.play();
 }
 
-console.log("replacing gifs");
 replaceGifvLinks();
