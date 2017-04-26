@@ -52,14 +52,16 @@ function replaceGifvLinks(comments) {
 
       if (!anchor.href.match(gifvRegex)) {
         // not a gifv link
-        return
+        continue
       }
 
+      var httpsLink = anchor.href.replace('http://', 'https://');
+
       // Replace the anchor text with the gifv
-      var newVideo = buildGifvVideoEmbed(anchor.href);
+      var newVideo = buildGifvVideoEmbed(httpsLink);
       if (newVideo === null) {
         // failed to get a valid video
-        return
+        continue
       }
       anchor.textContent = '';
       anchor.appendChild(newVideo);

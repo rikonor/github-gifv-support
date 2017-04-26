@@ -9,7 +9,7 @@ function overrideGithubCSP() {
       var isCSPHeader = /content-security-policy/i.test(details.responseHeaders[i].name);
       if (isCSPHeader) {
         var csp = details.responseHeaders[i].value;
-        csp = csp.replace('media-src', 'media-src ' + mediaHosts);
+        csp = csp.replace(/media-src.*?;/, 'media-src ' + mediaHosts + ';');
         details.responseHeaders[i].value = csp;
       }
     }
